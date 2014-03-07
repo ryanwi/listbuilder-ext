@@ -4,4 +4,9 @@ ol.stream-items .ui-selected { background: #FFFFCC; }
 .twlistbuilder-actions {
   background-color: #f5f8fa;
   padding: 20px;
+  border: 2px solid black;
+}
+
+.twlistbuilder-actions h1 {
+  margin-bottom: 10px;
 }
