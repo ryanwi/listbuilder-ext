@@ -2,13 +2,18 @@
   "name": "Twitter List Builder",
   "version": "0.1",
   "description": "Build Twitter list from any timeline view.",
-  "icons": {
-
+  "background": {
+    "scripts": ["js/background.js"],
+    "persistent": false
   },
-  "permissions": [ "https://twitter.com/*" ],
+  "permissions" : [
+      "declarativeContent"
+  ],
+  "icons" : {
+  },
   "page_action": {
     "default_icon": "images/icon.png",
-    "default_title": "Twitter List Builder",      // optional; shown in tooltip
+    "default_title": "Twitter List Builder",
     "default_popup": "popup.html"
   },
   "content_scripts": [
