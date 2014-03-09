@@ -1,28 +1,21 @@
-(function( $ ) {
+var listBuilder = function ($) {
 
   var selectAllOn = false;
   var tweetSelector = "ol.stream-items>li[data-item-type='tweet']";
-  var $selectLists = $( "<select id='twlistbuilder_lists'><option value='-1'> - Select a List - </option></select>" );
-  var $btnAddMembers = $( "<button type='button' class='btn btn-sm'>Include selected users in list</button>" ).on( "click", addToList);
-  var $btnToggleAll = $( "<button type='button' class='btn btn-sm'>Select All</button>" ).on( "click", toggleAll );
+  var checkboxSelector = "input[type='checkbox'][name='twlistbuilder_tweet']";
+  var $selectLists = $("<select id='twlistbuilder_lists'><option value='-1'> - Select a List - </option></select>");
+  var $btnAddMembers = $("<button type='button' class='btn btn-sm'>Add to List</button>").on("click", addSelectedToList);
+  var $btnToggleAll = $("<button type='button' class='btn btn-sm'>Select All</button>").on("click", toggleAll);
 
-  $(document).ready(function () {
-    console.log("ready");
-
-    // ensure a timeline is available
-    if ( $(tweetSelector).length == 0 ) {
-      console.log("not on a timeline view");
-      return;
-    }
-
+  function buildActionContainer() {
     // popup action area to process selected tweets
     $('body')
     .append(
-      $("<div id='twlistbuilder-actions' style='position: fixed; top: 50px; right: 3px; z-index: 1000;width:250px;'>")
-      .append("<h1>Twitter List Builder</h1>")
+      $("<div id='twlistbuilder-actions' style='position: fixed; top: 50px; right: 3px; z-index: 1000;width:200px;'>")
+      .append("<h1>List Builder</h1>")
       .append("<div id='twlistbuilder-progress'><img src='https://abs.twimg.com/a/1394123900/img/t1/spinner.gif'>Loading Lists</div>")
       .append($("<div id='twlistbuilder-content'>")
-      .append("<h4>1. select individual tweets or click to:</h4>")
+      .append("<h4>1. select individual tweets or:</h4>")
       .append($btnToggleAll)
       .append("<h4>2. pick a list </h4>")
       .append($selectLists)
@@ -30,20 +23,27 @@
       .append("<div id='twlistbuilder-notice'></div>")
       ));
     loadLists();
+  }
 
+  function addCheckboxesToTweets() {
+    console.log("addCheckboxesToTweets");
     // wire up individual tweet selection capability
     $tweetCheck = $("<input name='twlistbuilder_tweet' type='checkbox'>").on("change", tweetSelected);
     $(tweetSelector).prepend($tweetCheck);
+  }
 
-  }); // end ready
+  function removeCheckboxes() {
+    console.log("removeCheckboxes");
+    $(checkboxSelector).remove();
+  }
 
   function loadLists() {
     // grab any userid
     var anyUserId = "783214"; // @twitter
-    var jqxhr = $.getJSON( "/i/" + anyUserId + "/lists", function( data ) {
-
+    var jqxhr = $.getJSON("/i/" + anyUserId + "/lists", function(data) {
       // populate select list from response
       var $lists = $(data.html).filter("ul.list-membership-container").children("li");
+
       if ($lists.length == 0) {
         $("#twlistbuilder-progress").text("It appears you have no lists, press 'g' then 'l' (as in list) on the keyboard to go set one up.");
       } else {
@@ -55,7 +55,6 @@
           $("#twlistbuilder-content").show();
         });
       }
-
     });
   }
 
@@ -68,7 +67,7 @@
       selectAllOn = true;
     }
     $btnToggleAll.text(selectAllOn ? "Clear All" : "Select All");
-    $("input[type='checkbox'][name='twlistbuilder_tweet']").prop('checked', selectAllOn);
+    $(checkboxSelector).prop('checked', selectAllOn);
   }
 
   function tweetSelected(e) {
@@ -79,17 +78,17 @@
     }
   }
 
-  function addToList(e) {
+  function addSelectedToList(e) {
     // get selected list
     var selectedListId = $selectLists.val();
-    if (selectedListId == "-1") {
+    if (selectedListId === "-1") {
       alert("Please select a list.");
       return;
     }
 
     // collect selected users
     var userIds = getSelectedUserIds();
-    if (userIds.length == 0) {
+    if (userIds.length === 0) {
       alert("Please select at least one tweet.");
       return;
     }
@@ -103,7 +102,6 @@
       addListMember( val, selectedListId, $authToken );
     });
     $.when.apply($, promises).done(function() {
-      console.log("all done");
       selectAllOn = true;
       toggleAll();
       $btnAddMembers.attr("disabled", false);
@@ -126,4 +124,36 @@
     return $.post(url, { authenticity_token: authToken }, null);
   }
 
-})( jQuery );
+  function onTimelineChange(summaries) {
+    console.log("onTimelineChange", summaries);
+    removeCheckboxes();
+    addCheckboxesToTweets();
+  }
+
+  return {
+
+    init: function() {
+      // ensure a timeline is available
+      if ($(tweetSelector).length === 0) {
+        console.log("not on a timeline view");
+        return;
+      }
+
+      buildActionContainer();
+      addCheckboxesToTweets();
+
+      // watch as page changes and new tweets come in
+      var observer = new MutationSummary({
+        rootNode: document.getElementById("page-container"),
+        callback: onTimelineChange,
+        queries: [{ element: 'li[data-item-type=tweet]' }]
+      });
+    },
+
+  };
+
+}(jQuery);
+
+$(document).ready(function () {
+  listBuilder.init();
+});
