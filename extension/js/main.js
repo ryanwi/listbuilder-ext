@@ -4,14 +4,20 @@ var listBuilder = function ($) {
   var tweetSelector = "ol.stream-items>li[data-item-type='tweet']";
   var checkboxSelector = "input[type='checkbox'][name='twlistbuilder_tweet']";
   var $selectLists = $("<select id='twlistbuilder_lists'><option value='-1'> - Select a List - </option></select>");
-  var $btnAddMembers = $("<button type='button' class='btn btn-sm'>Add to List</button>").on("click", addSelectedToList);
-  var $btnToggleAll = $("<button type='button' class='btn btn-sm'>Select All</button>").on("click", toggleAll);
+  var $btnAddMembers = $("<button type='button' class='btn small'>Add to List</button>").on("click", addSelectedToList);
+  var $btnToggleAll = $("<button type='button' class='btn small'>Select All</button>").on("click", toggleAll);
 
+  // popup action area to process selected tweets
   function buildActionContainer() {
-    // popup action area to process selected tweets
+    if ($("#twlistbuilder-actions").length > 0) {
+      console.log("already built");
+      $("#twlistbuilder-actions").show();
+      return;
+    }
+
     $('body')
     .append(
-      $("<div id='twlistbuilder-actions' style='position: fixed; top: 50px; right: 3px; z-index: 1000;width:200px;'>")
+      $("<div id='twlistbuilder-actions' style='position: fixed; top: 50px; right: 3px; z-index: 1000;width:196px;'>")
       .append("<h1>List Builder</h1>")
       .append("<div id='twlistbuilder-progress'><img src='https://abs.twimg.com/a/1394123900/img/t1/spinner.gif'>Loading Lists</div>")
       .append($("<div id='twlistbuilder-content'>")
@@ -25,25 +31,24 @@ var listBuilder = function ($) {
     loadLists();
   }
 
+  // wire up individual tweet selection capability
   function addCheckboxesToTweets() {
-    console.log("addCheckboxesToTweets");
-    // wire up individual tweet selection capability
-    $tweetCheck = $("<input name='twlistbuilder_tweet' type='checkbox'>").on("change", tweetSelected);
+    $tweetCheck = $("<input name='twlistbuilder_tweet' type='checkbox'>").on("change", onTweetSelected);
     $(tweetSelector).prepend($tweetCheck);
   }
 
   function removeCheckboxes() {
-    console.log("removeCheckboxes");
     $(checkboxSelector).remove();
   }
 
+  // populate dropdown with user's lists
   function loadLists() {
     // grab any userid
     var anyUserId = "783214"; // @twitter
-    var jqxhr = $.getJSON("/i/" + anyUserId + "/lists", function(data) {
-      // populate select list from response
-      var $lists = $(data.html).filter("ul.list-membership-container").children("li");
 
+    // call the internal list endpoint, testing against any user
+    var jqxhr = $.getJSON("/i/" + anyUserId + "/lists", function(data) {
+      var $lists = $(data.html).filter("ul.list-membership-container").children("li");
       if ($lists.length == 0) {
         $("#twlistbuilder-progress").text("It appears you have no lists, press 'g' then 'l' (as in list) on the keyboard to go set one up.");
       } else {
@@ -51,9 +56,10 @@ var listBuilder = function ($) {
           var listId = $(element).data("list-id");
           var listName = $(element).text();
           $selectLists.append($("<option>", { value: listId, text: listName }));
-          $("#twlistbuilder-progress").hide();
-          $("#twlistbuilder-content").show();
         });
+
+        $("#twlistbuilder-progress").hide();
+        $("#twlistbuilder-content").show();
       }
     });
   }
@@ -70,7 +76,7 @@ var listBuilder = function ($) {
     $(checkboxSelector).prop('checked', selectAllOn);
   }
 
-  function tweetSelected(e) {
+  function onTweetSelected(e) {
     if ($(this).is(':checked')) {
       $(this).parent().addClass("ui-selected");
     } else {
@@ -105,7 +111,7 @@ var listBuilder = function ($) {
       selectAllOn = true;
       toggleAll();
       $btnAddMembers.attr("disabled", false);
-      $("#twlistbuilder-notice").show().text("List updated!");
+      $("#twlistbuilder-notice").show().text("List updated!").fadeOut(3000);
     });
   }
 
@@ -124,30 +130,19 @@ var listBuilder = function ($) {
     return $.post(url, { authenticity_token: authToken }, null);
   }
 
-  function onTimelineChange(summaries) {
-    console.log("onTimelineChange", summaries);
-    removeCheckboxes();
-    addCheckboxesToTweets();
-  }
-
   return {
 
     init: function() {
       // ensure a timeline is available
       if ($(tweetSelector).length === 0) {
         console.log("not on a timeline view");
+        $("#twlistbuilder-actions").hide();
         return;
       }
 
       buildActionContainer();
+      removeCheckboxes();
       addCheckboxesToTweets();
-
-      // watch as page changes and new tweets come in
-      var observer = new MutationSummary({
-        rootNode: document.getElementById("page-container"),
-        callback: onTimelineChange,
-        queries: [{ element: 'li[data-item-type=tweet]' }]
-      });
     },
 
   };
@@ -156,4 +151,11 @@ var listBuilder = function ($) {
 
 $(document).ready(function () {
   listBuilder.init();
+});
+
+// watch as page changes and new tweets come in
+var observer = new MutationSummary({
+  rootNode: document.getElementById("page-container"),
+  callback: listBuilder.init,
+  queries: [{ element: 'li[data-item-type=tweet]' }]
 });
