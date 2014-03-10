@@ -1,4 +1,5 @@
 var listBuilder = function ($) {
+  'use strict';
 
   var selectAllOn = false;
   var tweetSelector = "ol.stream-items>li[data-item-type='tweet']";
@@ -21,9 +22,9 @@ var listBuilder = function ($) {
       .append("<h1>List Builder</h1>")
       .append("<div id='twlistbuilder-progress'><img src='https://abs.twimg.com/a/1394123900/img/t1/spinner.gif'>Loading Lists</div>")
       .append($("<div id='twlistbuilder-content'>")
-      .append("<h4>1. select individual tweets or:</h4>")
+      .append("<h4>Select individual tweets or:</h4>")
       .append($btnToggleAll)
-      .append("<h4>2. pick a list </h4>")
+      .append("<h4>Choose a list </h4>")
       .append($selectLists)
       .append($btnAddMembers)
       .append("<div id='twlistbuilder-notice'></div>")
@@ -33,7 +34,7 @@ var listBuilder = function ($) {
 
   // wire up individual tweet selection capability
   function addCheckboxesToTweets() {
-    $tweetCheck = $("<input name='twlistbuilder_tweet' type='checkbox'>").on("change", onTweetSelected);
+    var $tweetCheck = $("<input name='twlistbuilder_tweet' type='checkbox'>").on("change", onTweetSelected);
     $(tweetSelector).prepend($tweetCheck);
   }
 
@@ -101,7 +102,7 @@ var listBuilder = function ($) {
 
     // fire off membership requests
     $btnAddMembers.attr("disabled", true);
-    $authToken = $("input[type='hidden'][name='authenticity_token']").first().val();
+    var $authToken = $("input[type='hidden'][name='authenticity_token']").first().val();
 
     // batch the ajax requests and update when done with all
     var promises = $.map( userIds, function( val, i ) {
