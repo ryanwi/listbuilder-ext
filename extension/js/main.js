@@ -34,12 +34,13 @@ var listBuilder = function ($) {
 
   // wire up individual tweet selection capability
   function addCheckboxesToTweets() {
-    var $tweetCheck = $("<input name='twlistbuilder_tweet' type='checkbox'>").on("change", onTweetSelected);
-    $(tweetSelector).prepend($tweetCheck);
-  }
-
-  function removeCheckboxes() {
-    $(checkboxSelector).remove();
+    $(tweetSelector).each(function(index, element) {
+      var $tweet = $(element); // or $(this)
+      if ($tweet.children(checkboxSelector).length === 0) {
+        var $tweetCheck = $("<input name='twlistbuilder_tweet' type='checkbox'>").on("change", onTweetSelected);
+        $tweet.prepend($tweetCheck);
+      }
+    });
   }
 
   // populate dropdown with user's lists
@@ -142,7 +143,6 @@ var listBuilder = function ($) {
       }
 
       buildActionContainer();
-      removeCheckboxes();
       addCheckboxesToTweets();
     },
 
