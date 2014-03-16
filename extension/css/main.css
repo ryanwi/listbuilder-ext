@@ -1,21 +1,44 @@
 ol.stream-items .ui-selecting { background: #FECA40; }
 ol.stream-items .ui-selected { background: #FFFFCC; }
 
-#twlistbuilder-actions {
+#twlistbuilder {
   background-color: #f5f8fa;
-  padding: 20px;
-  border: 2px solid black;
+  position: fixed; top: 50px;
+  right: 3px;
+  z-index: 100;
+  width: 225px;
+  border: 1px solid #292f33;
+  border-radius: 4px;
 }
 
-#twlistbuilder-actions h1 {
-  margin-bottom: 10px;
+#twlistbuilder-header {
+  padding: .4em 1em;
+  border: 1px solid #aaaaaa;
+  background: #fff;
+  position: relative;
 }
 
-#twlistbuilder-progress {
+#twlistbuilder-title {
+  font-weight: bold;
+}
+
+#twlistbuilder-display {
+  border: 1px solid #d3d3d3;
+  background: #e6e6e6;
+  font-weight: normal;
+  color: #555555;
+  position: absolute;
+  right: .3em;
+  top: 50%;
+  width: 20px;
+  margin: -10px 0 0 0;
+  padding: 1px;
+  height: 20px;
 }
 
 #twlistbuilder-content {
   display:none;
+  padding: .5em .5em;
 }
 
 #twlistbuilder-content h4 {

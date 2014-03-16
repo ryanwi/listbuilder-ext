@@ -7,19 +7,22 @@ var listBuilder = function ($) {
   var $selectLists = $("<select id='twlistbuilder_lists'><option value='-1'> - Select a List - </option></select>");
   var $btnAddMembers = $("<button type='button' class='btn small'>Add to List</button>").on("click", addSelectedToList);
   var $btnToggleAll = $("<button type='button' class='btn small'>Select All</button>").on("click", toggleAll);
+  var $btnToggleDisplay = $("<button id='twlistbuilder-display'>-</button>").on("click", toggleDisplay);
 
   // popup action area to process selected tweets
   function buildActionContainer() {
-    if ($("#twlistbuilder-actions").length > 0) {
+    if ($("#twlistbuilder").length > 0) {
       console.log("already built");
-      $("#twlistbuilder-actions").show();
+      $("#twlistbuilder").show();
       return;
     }
 
     $('body')
     .append(
-      $("<div id='twlistbuilder-actions' style='position: fixed; top: 50px; right: 3px; z-index: 1000;width:196px;'>")
-      .append("<h1>List Builder</h1>")
+      $("<div id='twlistbuilder'>")
+      .append($("<div id='twlistbuilder-header'>")
+      .append("<span id='twlistbuilder-title'>List Builder</span>")
+      .append($btnToggleDisplay))
       .append("<div id='twlistbuilder-progress'><img src='https://abs.twimg.com/a/1394123900/img/t1/spinner.gif'>Loading Lists</div>")
       .append($("<div id='twlistbuilder-content'>")
       .append("<h4>Select individual tweets or:</h4>")
@@ -30,6 +33,17 @@ var listBuilder = function ($) {
       .append("<div id='twlistbuilder-notice'></div>")
       ));
     loadLists();
+  }
+
+  function toggleDisplay() {
+    var $content = $("#twlistbuilder-content");
+    if ($content.is(":visible")) {
+      $content.hide();
+      $btnToggleDisplay.text("+");
+    } else {
+      $content.show();
+      $btnToggleDisplay.text("-");
+    }
   }
 
   // wire up individual tweet selection capability
@@ -138,7 +152,7 @@ var listBuilder = function ($) {
       // ensure a timeline is available
       if ($(tweetSelector).length === 0) {
         console.log("not on a timeline view");
-        $("#twlistbuilder-actions").hide();
+        $("#twlistbuilder").hide();
         return;
       }
 
