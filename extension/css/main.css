@@ -5,7 +5,7 @@ ol.stream-items .ui-selected { background: #FFFFCC; }
   background-color: #f5f8fa;
   position: fixed; top: 50px;
   right: 3px;
-  z-index: 100;
+  z-index: 9999;
   width: 225px;
   border: 1px solid #292f33;
   border-radius: 4px;
